@@ -1,4 +1,4 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <ctime>
 #include <cstdlib>
 
@@ -15,7 +15,7 @@ void copy_arr(int length, int src[], int dst[]) {
 	}
 }
 /**
- * Меняет значения местами
+ * РњРµРЅСЏРµС‚ Р·РЅР°С‡РµРЅРёСЏ РјРµСЃС‚Р°РјРё
  */
 inline void exchg(int& a, int& b) {
 	int tmp = a;
@@ -25,8 +25,8 @@ inline void exchg(int& a, int& b) {
 
 
 /**
- * Создаёт и сортирует копию массива arr,
- * длинной length в порядке возрастания, если up == true, в порядке убывания, если up == false, и возвращает ее!
+ * РЎРѕР·РґР°С‘С‚ Рё СЃРѕСЂС‚РёСЂСѓРµС‚ РєРѕРїРёСЋ РјР°СЃСЃРёРІР° arr,
+ * РґР»РёРЅРЅРѕР№ length РІ РїРѕСЂСЏРґРєРµ РІРѕР·СЂР°СЃС‚Р°РЅРёСЏ, РµСЃР»Рё up == true, РІ РїРѕСЂСЏРґРєРµ СѓР±С‹РІР°РЅРёСЏ, РµСЃР»Рё up == false, Рё РІРѕР·РІСЂР°С‰Р°РµС‚ РµРµ!
  */
 int* sort_1(const bool up, int length, int arr[]) {
 	int *result = new int[length];
@@ -45,12 +45,12 @@ int* sort_1(const bool up, int length, int arr[]) {
 			}
 		}
 	}
-	std::cout << "Количество итераций: " << iter << std::endl;
+	std::cout << "РљРѕР»РёС‡РµСЃС‚РІРѕ РёС‚РµСЂР°С†РёР№: " << iter << std::endl;
 	return result;
 }
 
 /**
- * Сдвигает часть масива arr, начинающуюся с элемента с индексом start, заканчивая индексом pos, на 1 вправо
+ * РЎРґРІРёРіР°РµС‚ С‡Р°СЃС‚СЊ РјР°СЃРёРІР° arr, РЅР°С‡РёРЅР°СЋС‰СѓСЋСЃСЏ СЃ СЌР»РµРјРµРЅС‚Р° СЃ РёРЅРґРµРєСЃРѕРј start, Р·Р°РєР°РЅС‡РёРІР°СЏ РёРЅРґРµРєСЃРѕРј pos, РЅР° 1 РІРїСЂР°РІРѕ
  */
 void shift(int start, int pos, int* arr) {
 	
@@ -68,14 +68,14 @@ int* sort_2(const bool up, int length, int arr[]) {
 		result[j] = item;
 		iter++;
 	}
-	std::cout << "Количество итераций: " << iter << std::endl;
+	std::cout << "РљРѕР»РёС‡РµСЃС‚РІРѕ РёС‚РµСЂР°С†РёР№: " << iter << std::endl;
 	return result;
 }
 
 
 /**
- *  Ищет минимальное значение (min == true) или максимальное значение (min == false) в масиве arr, длинной length, возвращает
- * индекс найденого элемента.
+ *  РС‰РµС‚ РјРёРЅРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ (min == true) РёР»Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ (min == false) РІ РјР°СЃРёРІРµ arr, РґР»РёРЅРЅРѕР№ length, РІРѕР·РІСЂР°С‰Р°РµС‚
+ * РёРЅРґРµРєСЃ РЅР°Р№РґРµРЅРѕРіРѕ СЌР»РµРјРµРЅС‚Р°.
  */
 int find(bool min, int* arr, int length) {
 	int result = 0;
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
 	int *arr;
 	unsigned int ar_size = 0;
-	std::cout << "Введите размер масива: ";
+	std::cout << "Р’РІРµРґРёС‚Рµ СЂР°Р·РјРµСЂ РјР°СЃРёРІР°: ";
 	std::cin >> ar_size;
 
 	arr = new int[ar_size];
@@ -100,42 +100,42 @@ int main(int argc, char* argv[]) {
 	for (auto i = 0; i < ar_size; i++) {
 		arr[i] = std::rand();
 	}
-	std::cout << "Згенерированый массив:" << std::endl;
+	std::cout << "Р—РіРµРЅРµСЂРёСЂРѕРІР°РЅС‹Р№ РјР°СЃСЃРёРІ:" << std::endl;
 	show_arr(ar_size, arr);
 
-	// Сортировка
-	std::cout << "Сортировка метод вставки" << std::endl;
+	// РЎРѕСЂС‚РёСЂРѕРІРєР°
+	std::cout << "РЎРѕСЂС‚РёСЂРѕРІРєР° РјРµС‚РѕРґ РІСЃС‚Р°РІРєРё" << std::endl;
 	{
 		std::cout << std::endl;
 		int *sort_up = sort_2(true, ar_size, arr);
-		std::cout << "Отсортированный по возврастанию массив:" << std::endl;
+		std::cout << "РћС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ РІРѕР·РІСЂР°СЃС‚Р°РЅРёСЋ РјР°СЃСЃРёРІ:" << std::endl;
 		show_arr(ar_size, sort_up);
 		delete[] sort_up;
 
 		std::cout << std::endl;
 		int *sort_down = sort_2(false, ar_size, arr);
-		std::cout << "Отсортированный по убыванию массив:" << std::endl;
+		std::cout << "РћС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ СѓР±С‹РІР°РЅРёСЋ РјР°СЃСЃРёРІ:" << std::endl;
 		show_arr(ar_size, sort_down);
 		delete[] sort_down;
 	}
-	std::cout << std::endl << "Сортировка пузырьковый метод" << std::endl;
+	std::cout << std::endl << "РЎРѕСЂС‚РёСЂРѕРІРєР° РїСѓР·С‹СЂСЊРєРѕРІС‹Р№ РјРµС‚РѕРґ" << std::endl;
 	{
 		std::cout << std::endl;
 		int *sort_up = sort_1(true, ar_size, arr);
-		std::cout << "Отсортированный по возврастанию массив:" << std::endl;
+		std::cout << "РћС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ РІРѕР·РІСЂР°СЃС‚Р°РЅРёСЋ РјР°СЃСЃРёРІ:" << std::endl;
 		show_arr(ar_size, sort_up);
 		delete[] sort_up;
 
 		std::cout << std::endl;
 		int *sort_down = sort_1(false, ar_size, arr);
-		std::cout << "Отсортированный по убыванию массив:" << std::endl;
+		std::cout << "РћС‚СЃРѕСЂС‚РёСЂРѕРІР°РЅРЅС‹Р№ РїРѕ СѓР±С‹РІР°РЅРёСЋ РјР°СЃСЃРёРІ:" << std::endl;
 		show_arr(ar_size, sort_down);
 		delete[] sort_down;
 	}
-	// Поиск минимального и максимального значения.
+	// РџРѕРёСЃРє РјРёРЅРёРјР°Р»СЊРЅРѕРіРѕ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ Р·РЅР°С‡РµРЅРёСЏ.
 	int min = find(true, arr, ar_size), max = find(false, arr, ar_size);
-	std::cout << "Минимальное значение arr[" << min << "] = " << arr[min] << std::endl;
-	std::cout << "Максимальное значение arr[" << max << "] = " << arr[max] << std::endl;
+	std::cout << "РњРёРЅРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ arr[" << min << "] = " << arr[min] << std::endl;
+	std::cout << "РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ Р·РЅР°С‡РµРЅРёРµ arr[" << max << "] = " << arr[max] << std::endl;
 
 	delete[] arr;
 
