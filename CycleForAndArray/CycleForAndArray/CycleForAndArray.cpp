@@ -14,6 +14,7 @@ void copy_arr(int length, int src[], int dst[]) {
 		dst[size] = src[--size];
 	}
 }
+
 /**
  * Меняет значения местами
  */
@@ -22,8 +23,6 @@ inline void exchg(int& a, int& b) {
 	a = b;
 	b = tmp;
 }
-
-
 /**
  * Создаёт и сортирует копию массива arr,
  * длинной length в порядке возрастания, если up == true, в порядке убывания, если up == false, и возвращает ее!
@@ -71,7 +70,6 @@ int* sort_2(const bool up, int length, int arr[]) {
 	std::cout << "Количество итераций: " << iter << std::endl;
 	return result;
 }
-
 
 /**
  *  Ищет минимальное значение (min == true) или максимальное значение (min == false) в масиве arr, длинной length, возвращает
