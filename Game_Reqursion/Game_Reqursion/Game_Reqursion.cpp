@@ -53,8 +53,8 @@ void solve(int koef_idx, int& res_row, int& res_col) {
 		res_col = std::find(field[koef_idx], field[koef_idx] + 3, ' ') - field[koef_idx];
 	}
 	else if (koef_idx < 6) {
-		res_col = koef_idx;
-		char ar[3] = { field[0][koef_idx], field[1][koef_idx], field[2][koef_idx] };
+		res_col = koef_idx % 3;
+		char ar[3] = { field[0][res_col], field[1][res_col], field[2][res_col] };
 		res_row = std::find(ar, ar + 3, ' ') - ar;
 	}
 	else if (koef_idx == 6) {
