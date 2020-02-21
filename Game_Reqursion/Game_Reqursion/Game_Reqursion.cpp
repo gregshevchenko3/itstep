@@ -1,27 +1,30 @@
-#include <iostream>
+#include <clocale>
 #include <algorithm>
 #include <conio.h>
 
 // Ігрове поле
-char field[3][3] = { 
-	{' ', ' ', ' ',},
-	{' ', ' ', ' ',},
-	{' ', ' ', ' ',},
+char field[3][3];
+
+// вумна консоль.
+#include "console.h"
+#include "menu.h"
+#include "status_bar.h"
+#include "game.h"
+
+void init_field() {
+	for (int i = 0; i < 3; i++) {
+		for (int j = 0; j < 3; j++) {
+			field[i][j] = ' ';
+		}
+	}
 };
 
-// Комп'ютерний гравець.
-void calc_comp_move();
-// Перевірка ігрового поля;
-void check(bool, int);
-// Хід 
-void move(bool, int);
-// Отрисовка поля
-void update(bool player, int move_count);
+
 /**
- * Рахує рейтинг по рядках, стовцях, та діагонялях. 
- * Результат записує в масив, що переданий в якості аргументу.
+ * Рахує рейтинг по рядках, стовцях, та дiагонялях. 
+ * Результат записує в масив, що переданий в якостi аргументу.
  * 
- * Виикористовується при перевірці ігрового поля та при прорахунку ходу ком'пютером.
+ * Виикористовується при перевiрцi iгрового поля та при прорахунку ходу ком'пютером.
  */
 void create_rating_vector(int atoms[8]) {
 	for (auto i = 0; i < 8; i++) atoms[i] = 0;
@@ -34,18 +37,18 @@ void create_rating_vector(int atoms[8]) {
 			if (field[j][i] == 'X') atoms[i + 3] += 1;
 			if (field[j][i] == 'O') atoms[i + 3] -= 1;
 		}
-		// сума по основній діагоналі
+		// сума по основнiй дiагоналi
 		if (field[i][i] == 'X') atoms[6] += 1;
 		if (field[i][i] == 'O') atoms[6] -= 1;
-		// сума по побічній діагоналі
+		// сума по побiчнiй дiагоналi
 		if (field[i][2 - i] == 'X') atoms[7] += 1;
 		if (field[i][2 - i] == 'O') atoms[7] -= 1;
 	}
 }
 /**
- * Виріщує куди вписувать "O". результат передає в змінні, передані за посиланнями res_row, res_col;
- * koef_idx - фактор, за яким приймається рішення, це позиція елемента в масиві рейтигів, обчисленому
- * функцією create_rating_vector().
+ * Вирiщує куди вписувать "O". результат передає в змiннi, переданi за посиланнями res_row, res_col;
+ * koef_idx - фактор, за яким приймається рiшення, це позицiя елемента в масивi рейтигiв, обчисленому
+ * функцiєю create_rating_vector().
  */
 void solve(int koef_idx, int& res_row, int& res_col) {
 	if (koef_idx < 3) {
@@ -69,8 +72,8 @@ void solve(int koef_idx, int& res_row, int& res_col) {
 	}
 }
 /**
- * Власне логіка компа. Без передбачень. Можливості навчання і т.д.
- * Прото тупий кінцевий автомат. Деталі по тексту функції
+ * Власне логiка компа. Без передбачень. Можливостi навчання i т.д.
+ * Прото тупий кiнцевий автомат. Деталi по тексту функцiї
  */
 void calc_comp_move() {
 	int atoms[8];
@@ -80,21 +83,21 @@ void calc_comp_move() {
 	auto mx = std::max_element(atoms, atoms + 8), mn = std::min_element(atoms, atoms + 8);
 	int mx_idx = mx - atoms, mn_idx = mn - atoms;
 	/*
-	 * Якщо сума елементів в ряду, в стовпці, або в діагональ матриці дорівнює -2, то а цим ходом можна виграти,
-	 * вписавши у вільну клітинку ряду, стовпця, діагоналі відповідно "O"
+	 * Якщо сума елементiв в ряду, в стовпцi, або в дiагональ матрицi дорiвнює -2, то а цим ходом можна виграти,
+	 * вписавши у вiльну клiтинку ряду, стовпця, дiагоналi вiдповiдно "O"
 	 */
 	if (*mn == -2)
 		solve(mn_idx, row, col);
 	else
 		/*
-		 * Якщо сума елементів в ряду, в стовпці, або в матриці дорівнює 2, то аби не програти - вписуємо
-		 * у вільну клітинку ряду, стовпця, діагоналі відповідно "O"
+		 * Якщо сума елементiв в ряду, в стовпцi, або в матрицi дорiвнює 2, то аби не програти - вписуємо
+		 * у вiльну клiтинку ряду, стовпця, дiагоналi вiдповiдно "O"
 		 */
 		if (*mx == 2)
 			solve(mx_idx, row, col);
 		else
 			/*
-			 * Якщо ні виграш, ні програш не грозять, записуємо "O" у вільну клітинку ряду, стовпця, діагоналі відповідно, якщо сума елементів - найменша.
+			 * Якщо нi виграш, нi програш не грозять, записуємо "O" у вiльну клiтинку ряду, стовпця, дiагоналi вiдповiдно, якщо сума елементiв - найменша.
 			 */
 			solve(mn_idx, row, col);
 	field[row][col] = 'O';
@@ -118,33 +121,35 @@ void check(bool player, int move_count) {
 	create_rating_vector(atoms);
 
 	if (3 == *std::max_element(atoms, atoms+8)) {
-		std::cout << "Ви виграли!!!" << std::endl;
+		int pos = std::find(atoms, atoms + 8, 3) - atoms;
+		update(player, move_count, pos);
 		return;
 	}
 	if (-3 == *std::min_element(atoms, atoms+8)) {
-		std::cout << "Ви програли!!!" << std::endl;
+		int pos = std::find(atoms, atoms + 8, -3) - atoms;
+		update(player, move_count, pos);
 		return;
 	}
 	
 	if (move_count == 0){
-		std::cout << "Нічия..." << std::endl;
+		update(player, move_count, -1);
 		return;
 	}
 	// гравець натиснув Esc (Здався)
 	if (move_count == -1) {
 		if (player) {
-			std::cout << "Ви здалися!!!" << std::endl;
+			update(player, move_count, -1);
 			return;
 		}
 	}
 	move(player, move_count);
 }
 /**
- * Хід.
+ * Хiд.
  * player == true - грає живий гравець
  * player == false - грає комп'ютер.
  *
- * move_count > 0 - гра продовжується. Через цей параметр відслідковується нічия, та технічна поразка (гравець здався)
+ * move_count > 0 - гра продовжується. Через цей параметр вiдслiдковується нiчия, та технiчна поразка (гравець здався)
  */
 void move(bool player, int move_cont) {
 	if (player) {
@@ -165,40 +170,108 @@ void move(bool player, int move_cont) {
 	else {
 		calc_comp_move();
 	}
-	update(!player, move_cont - 1);
+	update(!player, move_cont - 1, -1);
 }
 /**
  * Малюює поле.
  * player == true - грає живий гравець
  * player == false - грає комп'ютер.
  *
- * move_count > 0 - гра продовжується. Через цей параметр відслідковується нічия, та технічна поразка (гравець здався)
+ * move_count > 0 - гра продовжується. Через цей параметр вiдслiдковується нiчия, та технiчна поразка (гравець здався)
  */
-void update(bool player, int move_count) {
-	system("cls");
-	for (int i = 0; i < 3; i++) {
-		if (i == 0)
-			std::cout << "+---+---+---+" << std::endl;
-		for (int j = 0; j < 3; j++) 
-			std::cout << "| " << field[i][j] << " ";
-		std::cout << "|" << std::endl;
-		std::cout << "+---+---+---+" << std::endl;
-	}
-	std::cout << std::endl;
-	if (player)
-		std::cout << "Ваш хід" << std::endl;
+void update(bool player, int move_count, int pos) {
+	console_ostream<char, std::char_traits<char>> console(std::cout.rdbuf());
+	coord2d size = console.get_console_size();
+	short y_offset = (size.y - 5) / 2, x_offset = (size.x - 13) / 2;
+	// 13 символiв на 5 строк
 	
+	system("cls");
+	console << attr(10);
+	for (int i = 0; i < 3; i++) {
+		console << coord2d(x_offset, y_offset++);
+		if (i == 0)
+			console << "+---+---+---+" << std::endl;
+			console << coord2d(x_offset, y_offset++);
+		for (int j = 0; j < 3; j++) {
+			char ch = field[i][j];
+			switch (pos) {
+			case 0:
+			case 1:
+			case 2:
+				if (i == pos) {
+					console << "|" << attr( 0 | (player)? BACKGROUND_RED:BACKGROUND_GREEN ) << " " << ch << " " << attr(10);
+				} else 
+					console << "| " << ch << attr(10) << " ";
+				break;
+			case 3:
+			case 4:
+			case 5:
+				if (j == pos % 3) {
+					console << "|" << attr(0 | (player) ? BACKGROUND_RED : BACKGROUND_GREEN) << " " << ch << " " << attr(10);
+				}
+				else 
+					console << "| " << ch << attr(10) << " ";
+				break;
+			case 6:
+				if (i == j) {
+					console << "|" << attr(0 | (player) ? BACKGROUND_RED : BACKGROUND_GREEN) << " " << ch << " " << attr(10);
+				}
+				else
+					console << "| " << ch << attr(10) << " ";
+				break;
+			case 7:
+				if (i == 2 - j) {
+					console << "|" << attr(0 | (player) ? BACKGROUND_RED : BACKGROUND_GREEN) << " " << ch << " " << attr(10);
+				}
+				else console << "| " << ch << attr(10) << " ";
+				break;
+			default:
+				console << "| " << ch << attr(10) << " ";
+			}
+		}
+		console << attr(10) <<  "|" << std::endl;
+		console << coord2d(x_offset, y_offset) << "+---+---+---+" << std::endl;
+	}
+	console << std::endl;
+	console << coord2d(x_offset, y_offset+1);
+	if (pos >= 0) {
+		if (!player)
+			console << "Ви виграли!!!";
+		else 
+			console <<  "Ви програли!!!" ;
+	}
+	if (move_count == -1) console << "Ви здалися!!!";
+	if (move_count == 0) console << "Нiчия";
+
+	if (pos != -1 || move_count == -1 || move_count == 0) {
+		show_status_bar(" Натиснiть будь-яку клавiшу ");
+		getch();
+		return;
+	}
+	if (player)
+		console << "Ваш хiд";
+	show_status_bar(" 1-9 вибiр поля, Esc - здатися ");
 	check(player, move_count);
 }
 
-#include "windows.h"
 int main()
 {
-	SetConsoleCP(65001);
-	SetConsoleOutputCP(65001);
-	setlocale(LC_ALL, "Ukranian");
+	menu_item items[] = {
+		{menu_item::mtype::button, false, true, "Нова гра", New_game },
+		{menu_item::mtype::button, false, false, "Вихiд", Exit},
+	};
+	
+	auto console = GetStdHandle(STD_OUTPUT_HANDLE);
+	auto size = GetLargestConsoleWindowSize(console);
+	
+	size.X = 40;
+	size.Y = 20;
+	SMALL_RECT windowSize = { 0, 0, 39, 19 };
 
-	update(true, 9);
-	std::cout << "GAME OVER!" << std::endl;
+	SetConsoleWindowInfo(console, true, &windowSize);
+	SetConsoleScreenBufferSize(console, size);
+	std::setlocale(LC_ALL, "en_US.utf8");
+	menu_navigation(items, 2);
+
 	return 0;
 }
