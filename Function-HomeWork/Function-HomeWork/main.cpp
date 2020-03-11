@@ -71,7 +71,7 @@ void main() {
 	print_array(arr, res_len);
 	std::cout << std::endl;
 
-	// Внутрішній буфер станів
+	// Видалити внутрішній буфер станів в генераторі
 	unique(0, 0);
 }
 
@@ -80,10 +80,11 @@ int unique(int min_value, int max_value) {
 	static int *states = new int[1];
 	static std::size_t counter = 0;
 
+
 	// Можливість скинути лічильник, та очистити масив станів.
 	if (min_value == max_value) {
 		delete[] states;
-		states = new int[1];
+		states = (min_value == 0)? 0 : new int[1];
 		counter = 0;
 		return min_value - 1;
 	}
