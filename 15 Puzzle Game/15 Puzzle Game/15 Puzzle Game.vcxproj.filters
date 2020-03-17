@@ -18,12 +18,9 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="unique.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="unique.h">
+    <ClInclude Include="..\..\Game_Reqursion\Game_Reqursion\console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
