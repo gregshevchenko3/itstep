@@ -20,7 +20,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Game_Reqursion\Game_Reqursion\console.h">
+    <ClInclude Include="table_config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
