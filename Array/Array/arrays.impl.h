@@ -94,15 +94,6 @@ Type ** CreateRand(size_t rows, size_t cols)
 }
 
 template<typename Type>
-void DestroyArray(Type** arr, size_t rows) {
-	for (auto i = 0u; i < rows; i++)
-	{
-		delete[] arr[i];
-	}
-	delete[] arr;
-}
-
-template<typename Type>
 void Print(Type * arr, std::size_t size)
 {
 	if (arr == nullptr) {
@@ -122,15 +113,15 @@ void Print(Type ** arr, size_t rows, size_t cols)
 	std::cout << "{" << std::endl;
 	for (auto i = 0u; i < rows; i++)
 	{ 
-		std::cout << "{";
+		std::cout << "\t{";
 		for (auto j = 0u; j < cols; j++)
 		{
 			std::cout.width(7);
 			std::cout << std::setprecision(4) << arr[i][j] << ",";
 		}
-		std::cout << "}" << std::endl;
+		std::cout << "}," << std::endl;
 	}
-	std::cout << "}" << std::endl;
+	std::cout << "};" << std::endl;
 }
 
 template<typename Type>
@@ -156,22 +147,20 @@ void insert(Type *& arr, std::size_t & size_of_arr, std::size_t position, Type v
 template<typename Type>
 void insert_row(Type **& arr, size_t & rows, size_t & cols, std::size_t row_position, Type * row)
 {
-	if (row_position > rows) return;
-	Type** tmp = arr;
-	arr = new Type*[++rows];
-	for (auto i = 0u; i < rows; i++) {
-		if (i == row_position)
-		{
-			arr[i] = new Type[cols];
-			std::copy(row, row + cols, arr[i]);
-		}
-		if (i >= row_position) {
-			arr[i + 1] = tmp[i];
-		}
-		if (i < row_position)
-			arr[i] = tmp[i];
+	Type* new_row = new Type[cols];
+	std::copy(row, row + cols, new_row);
+	insert<Type*>(arr, rows, row_position, new_row);
+}
+
+template<typename Type>
+void insert_col(Type **& arr, size_t & rows, size_t & cols, std::size_t col_position, Type * col)
+{
+	for (auto i = 0u; i < rows; i++) 
+	{
+		insert(arr[i], cols, col_position, col[i]);
+		cols--;
 	}
-	DestroyArray<Type>(tmp, rows);
+	cols++;
 }
 
 template<typename Type>
@@ -181,7 +170,8 @@ void remove(Type *& arr, std::size_t & size_of_arr, size_t position)
 	Type* tmp = arr;
 	arr = new Type[--size_of_arr];
 	for (auto i = 0u; i <= size_of_arr; i++) {
-		if (i <= position) {
+		if (i == position) continue;
+		if (i < position) {
 			arr[i] = tmp[i];
 		}
 		else {
@@ -194,31 +184,49 @@ void remove(Type *& arr, std::size_t & size_of_arr, size_t position)
 template<typename Type>
 void remove_row(Type **& arr, size_t & rows, size_t & cols, std::size_t row_position)
 {
-	if (row_position >= rows) return;
-	Type** tmp = arr;
-	arr = new Type*[--rows];
-	for (auto i = 0u; i <= rows; i++) {
-		if (i == row_position) {
-			delete[] arr[i];
-		}
-		if (i <= row_position) {
-			arr[i] = tmp[i];
-		}
-		else {
-			arr[i - 1] = tmp[i];
-		}
-
+	if (row_position > rows) return;
+	delete[]  arr[row_position];
+	remove<Type*>(arr, rows, row_position);
+}
+template<typename Type>
+void remove_col(Type **& arr, size_t & rows, size_t & cols, std::size_t col_position)
+{
+	for (auto i = 0u; i < rows; i++)
+	{
+		remove<Type>(arr[i], cols, col_position);
+		cols++;
 	}
-	DestroyArray<Type>(tmp, rows);
-}template<typename Type>
+	cols--;
+}
+template<typename Type>
 void push_back(Type *& arr, std::size_t & size_of_arr, Type value)
 {
 	insert(arr, size_of_arr, size_of_arr, value);
 }
 template<typename Type>
+void push_row_back(Type **& arr, std::size_t & rows, size_t & cols, Type * row)
+{
+	insert_row(arr, rows, cols, rows, row);
+}
+template<typename Type>
+void push_col_back(Type **& arr, std::size_t & rows, size_t & cols, Type * row)
+{
+	insert_col(arr, rows, cols, cols, row);
+}
+template<typename Type>
 void push_front(Type *& arr, std::size_t & size_of_arr, Type value)
 {
 	insert(arr, size_of_arr, 0, value);
+}
+template<typename Type>
+void push_row_front(Type **& arr, std::size_t & rows, size_t & cols, Type * row)
+{
+	insert_row(arr, rows, cols, 0, row);
+}
+template<typename Type>
+void push_col_front(Type **& arr, std::size_t & rows, size_t & cols, Type * col)
+{
+	insert_col(arr, rows, cols, 0, col);
 }
 template<typename Type>
 Type pop_back(Type *& arr, std::size_t & size_of_arr)
@@ -228,10 +236,54 @@ Type pop_back(Type *& arr, std::size_t & size_of_arr)
 	return result;
 }
 template<typename Type>
+Type * pop_row_back(Type **& arr, std::size_t & rows, size_t & cols)
+{
+	Type* result = new Type[cols];
+	std::copy(arr[rows - 1], arr[rows - 1] + cols, result);
+	remove_row(arr, rows, cols, rows - 1);
+	return result;
+}
+
+template<typename Type>
+Type * get_col_at(Type **& arr, std::size_t & rows, size_t & cols, size_t col_index) {
+	Type* result = new Type[rows];
+	for (auto i = 0u; i < rows; i++)
+	{
+		result[i] = arr[i][cols - 1];
+	}
+	return result;
+}
+
+
+template<typename Type>
+Type * pop_col_back(Type **& arr, std::size_t & rows, size_t & cols)
+{
+	Type* result = get_col_at(arr, rows, cols, cols - 1);
+	remove_col(arr, rows, cols, cols - 1);
+	return result;
+}
+template<typename Type>
 Type pop_front(Type *& arr, std::size_t & size_of_arr)
 {
 	Type result = arr[0];
 	remove(arr, size_of_arr, 0);
+	return result;
+}
+
+template<typename Type>
+Type * pop_row_front(Type **& arr, std::size_t & rows, size_t & cols)
+{
+	Type* result = new Type[cols];
+	std::copy(arr[0], arr[0] + cols, result);
+	remove_row(arr, rows, cols, 0);
+	return result;
+}
+
+template<typename Type>
+Type * pop_col_front(Type **& arr, std::size_t & rows, size_t & cols)
+{
+	Type* result = get_col_at(arr, rows, cols, 0);
+	remove_col(arr, rows, cols, 0);
 	return result;
 }
 

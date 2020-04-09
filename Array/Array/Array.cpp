@@ -2,6 +2,11 @@
 #include <conio.h>
 #include "arrays.h"
 
+//#define ARRAY_
+//#define ARRAY_2D
+//#define ARRAY_2D__ROWS_MANIPULATION
+//#define ARRAY_2D__COLS_MANIPULATION
+
 
 /**
  * This function will work only static array corectly, for dynamic arrays, this function allways return 1.
@@ -12,29 +17,10 @@ inline size_t items_in(Type& a) {
 }
 
 
-
-//
-// “упа ≥де€... ўе €кось треба передавати тип кожного з масив≥в.
-//
-//template <typename Type>
-//void print_arr(const char* names[], ...) {
-//	va_list ap;
-//	va_start(ap, names);
-//	while (*names) {
-//		std::cout << *names << "[";
-//		Type* arr = va_arg(ap, Type*);
-//		std::cout << va_arg(ap, std::size_t) << "] = {" ;
-//		Print<Type>(arr);
-//		std::cout << "}" << std::endl;
-//		names++;
-//	}
-//	va_end(ap);
-//};
-
-
 void main() {
 	std::srand(time(0));
 	
+#ifdef ARRAY_
 	float sfa[10];
 	int *dia = 0;
 	size_t dia_size = 10;
@@ -98,12 +84,12 @@ void main() {
 	std::cout << "dia[" << dia_size << "] = ";
 	Print(dia, dia_size);
 	std::cout << "removed value from dia[] is " << i_removed << std::endl;
-
 	delete[] dia;
 
-	std::cout << "Press any key..."; _getch();
-
-	std::cout << std::endl << std::endl << "Create two array" << std::endl;
+#endif
+	//std::cout << "Press any key..."; _getch();
+#ifdef ARRAY_2D
+	std::cout << std::endl << std::endl << "Create 2D array" << std::endl;
 	std::cout << "---------------------------------\n";
 	size_t rows = 5, cols = 5;
 	float ** dfa2D = CreateRand(rows, cols, 0.1f, 1.0f);
@@ -111,56 +97,84 @@ void main() {
 	Print(dfa2D, rows, cols);
 
 	float inserted[5] = { 1, 2, 3, 4, 5 };
+#	ifdef ARRAY_2D__ROWS_MANIPULATION
+	std::cout << std::endl << std::endl << "pop back row from array" << std::endl;
+	std::cout << "---------------------------------\n";
+	delete [] pop_row_back(dfa2D, rows, cols);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
+	std::cout << std::endl << std::endl << "pop front row from array" << std::endl;
+	std::cout << "---------------------------------\n";
+	delete [] pop_row_front(dfa2D, rows, cols);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
 	std::cout << std::endl << std::endl << "append row into array" << std::endl;
 	std::cout << "---------------------------------\n";
-	std::cout << std::endl << std::endl << "append col into array" << std::endl;
-	std::cout << "---------------------------------\n";
+	push_row_back(dfa2D, rows, cols, inserted);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
 	std::cout << std::endl << std::endl << "prepend row into array" << std::endl;
 	std::cout << "---------------------------------\n";
-	std::cout << std::endl << std::endl << "prepend col into array" << std::endl;
-	std::cout << "---------------------------------\n";
-	
+	push_row_front(dfa2D, rows, cols, inserted);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
 	std::cout << std::endl << std::endl << "insert row into array for 3-th position" << std::endl;
 	std::cout << "---------------------------------\n";
 	insert_row(dfa2D, rows, cols, 3, inserted);
 	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
 	Print(dfa2D, rows, cols);
 
-	std::cout << std::endl << std::endl << "insert col into array for 2-nd position" << std::endl;
-	std::cout << "---------------------------------\n";
 	std::cout << std::endl << std::endl << "remove 2-nd row from array " << std::endl;
 	std::cout << "---------------------------------\n";
 	remove_row(dfa2D, rows, cols, 2);
 	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
 	Print(dfa2D, rows, cols);
+#	endif
+#	ifdef ARRAY_2D__COLS_MANIPULATION
+	std::cout << std::endl << std::endl << "append col into array" << std::endl;
+	std::cout << "---------------------------------\n";
+	push_col_back(dfa2D, rows, cols, inserted);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
 
+	std::cout << std::endl << std::endl << "prepend col into array" << std::endl;
+	std::cout << "---------------------------------\n";
+	push_col_front(dfa2D, rows, cols, inserted);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
+	std::cout << std::endl << std::endl << "pop back col from array" << std::endl;
+	std::cout << "---------------------------------\n";
+	delete [] pop_col_back(dfa2D, rows, cols);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
+	std::cout << std::endl << std::endl << "pop front col from array" << std::endl;
+	std::cout << "---------------------------------\n";
+	delete[] pop_col_front(dfa2D, rows, cols);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+
+	std::cout << std::endl << std::endl << "insert col into array for 2-nd position" << std::endl;
+	std::cout << "---------------------------------\n";
+	insert_col(dfa2D, rows, cols, 2, inserted);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
 
 	std::cout << std::endl << std::endl << "remove 3-nd col from array" << std::endl;
 	std::cout << "---------------------------------\n";
-	std::cout << std::endl << std::endl << "pop back row from array" << std::endl;
-	std::cout << "---------------------------------\n";
-	std::cout << std::endl << std::endl << "pop back col from array" << std::endl;
-	std::cout << "---------------------------------\n";
-	std::cout << std::endl << std::endl << "pop front row from array" << std::endl;
-	std::cout << "---------------------------------\n";
-	std::cout << std::endl << std::endl << "pop front col from array" << std::endl;
-	std::cout << "---------------------------------\n";
+	remove_col(dfa2D, rows, cols, 3);
+	std::cout << "dfa2D[" << rows << "][" << cols << "] = ";
+	Print(dfa2D, rows, cols);
+#	endif
+	for (auto i = 0u; i < rows; i++)
+	{
+		delete[] dfa2D[i];
+	}
+	delete[] dfa2D;
+#endif
 }
-
-//Not working
-//
-//template <typename type, bool is_integral = std::is_integral<type>::value>
-//void FillRand(type* arr, std::size_t size, type min, type max);
-//
-//template <typename type>
-//void FillRand<type, true>(type* arr, std::size_t size, type min, type max) {
-//	for (auto i = 0; i < size; i++) {
-//		arr[i] = std::rand() % (max - min + 1) + min;
-//	}
-//};
-//template <typename type>
-//void FillRand<type, false>(type* arr, std::size_t size, type min, type max) {
-//	for (auto i = 0; i < size; i++) {
-//		arr[i] = arr[i] = std::rand() * (max - min) / RAND_MAX + min;
-//	}
-//};
