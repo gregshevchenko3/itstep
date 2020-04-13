@@ -68,18 +68,16 @@ void remove_row(Type **& arr, size_t& rows, size_t& cols, std::size_t row_positi
 template <typename Type>
 void remove_col(Type **& arr, size_t& rows, size_t& cols, std::size_t col_position);
 /**
- * Append a "size_of_values" values from array "values" to array "arr".
- * The transfered array in argument "arr" and transfered argument "size_of_arr" will be modified.
+ * Append a item "value" (or "row", or col, for 2-dimension array) to array "arr"
  */
 template <typename Type>
 void push_back(Type*& arr, std::size_t& size_of_arr, Type value);
 template <typename Type>
 void push_row_back(Type**& arr, std::size_t& rows, size_t& cols, Type* row);
 template <typename Type>
-void push_col_back(Type**& arr, std::size_t& rows, size_t& cols, Type* row);
+void push_col_back(Type**& arr, std::size_t& rows, size_t& cols, Type* col);
 /**
- * Prepend a "size_of_values" values from array "values" to array "arr".
- * The transfered array in argument "arr" and transfered argument "size_of_arr" will be modified.
+ * Prepend a item "value" (or "row", or col, for 2-dimension array) to array "arr"
  */
 template <typename Type>
 void push_front(Type*& arr, std::size_t& size_of_arr, Type value);
