@@ -184,13 +184,14 @@ void remove(Type *& arr, std::size_t & size_of_arr, size_t position)
 template<typename Type>
 void remove_row(Type **& arr, size_t & rows, size_t & cols, std::size_t row_position)
 {
-	if (row_position > rows) return;
+	if (row_position >= rows) return;
 	delete[]  arr[row_position];
 	remove<Type*>(arr, rows, row_position);
 }
 template<typename Type>
 void remove_col(Type **& arr, size_t & rows, size_t & cols, std::size_t col_position)
 {
+	if (col_position >= cols) return;
 	for (auto i = 0u; i < rows; i++)
 	{
 		remove<Type>(arr[i], cols, col_position);
