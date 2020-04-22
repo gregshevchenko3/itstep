@@ -2,14 +2,27 @@
 
 #include "../../Array/Array/arrays.h"
 
+// Все, що може зустрітися в строці
 enum tok_type {
 	Number, Plus, Minus, Div, Mod, Pow, Mul,
 };
+/** 
+ * Операторипо пріоритетам від найвищого до найнижчого
+ *   -		унарний мінус
+ *	 ^		піднесення до степеня
+ *  * / %   множення, ділення, модуль
+ *   + -    додавання віднімання.
+ */
 
+// Читаю строку посимвольно, поки не буде введено Enter
 const char* get_line();
+// Парсинг числа. Повертається елемент, що буде додано до масиву tokens
 long long* parse_num(char*& begin);
+// парсинг оператора. Повертається елемент, що буде додано до масиву tokens
 long long* parse_operator(char*& begin);
+// Аналіз масиву tokens, в якому знаходяться всі числа та операції, які потрібно над числами виконати
 long long** execute(long long** tokens, std::size_t& tok_counts);
+// видалення масиву tokens.
 void delete_tokens(long long** tokens, std::size_t tok_count);
 
 void main()
@@ -21,8 +34,10 @@ void main()
 	std::size_t rows = 0, cols = 2;
 
 	/* 
-	 * tokens[row][0] - tok_type
-	 * tokens[row][1] - value;
+	 * масив rows * cols
+	 * Кожний рядок в масиві описує знайдений об'єкт в строці.
+	 * tokens[rows][0] - одне із значень з enum tok_type
+	 * tokens[rows][1] - Якщо tokens[rows][0] == tok_type::Number - містить значення знайденого числа, інакше - 0.
 	 */
 	long long** tokens = nullptr; 
 
@@ -31,8 +46,9 @@ void main()
 		if (in) delete[] in;
 		std::cout << "calc> "; 
 		in = get_line();
-		// parce line!!!
 		char* tmp = (char*)in;
+		// Розбиваю отриману строку, і заношу в масив tokens - числа та оператори, якщо строка має символи, що не можуть бути інтерпретованими, як 
+		// число, або оператор, то виводжу повідомення про помилку, і видаляю масив.
 		while (*tmp != 0)
 		{
 			char* prev = tmp;
@@ -62,15 +78,20 @@ void main()
 		}
 		tmp = 0;
 		if (tokens) {
+			// Аналіз масиву tokens, і виконання операцій. Якщо аналіз пройде без помилок, то функція execute
+			// поверне масив tokens, що складається з одного елементу (однієї пари)
 			tokens = execute(tokens, rows);
 			if (tokens) {
+				// Якщо все впорядку - виводжу на екран результат
 				std::cout << tokens[0][1] << std::endl;
+				// Видаляю масив tokens;
 #ifdef _DEBUG
 				std::cout << "DEBUG: tokens count after execute: " << rows << std::endl;
 #endif
 				delete_tokens(tokens, rows);
 				tokens = nullptr;
 			}
+			// Скидаю в 0 лічильник елементів
 			rows = 0;
 		}
 	}
