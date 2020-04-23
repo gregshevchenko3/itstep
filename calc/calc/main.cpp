@@ -1,3 +1,5 @@
+#ifdef Version0
+
 #include <iostream>
 
 #include "../../Array/Array/arrays.h"
@@ -49,6 +51,7 @@ void main()
 		char* tmp = (char*)in;
 		// Розбиваю отриману строку, і заношу в масив tokens - числа та оператори, якщо строка має символи, що не можуть бути інтерпретованими, як 
 		// число, або оператор, то виводжу повідомення про помилку, і видаляю масив.
+
 		while (*tmp != 0)
 		{
 			char* prev = tmp;
@@ -287,3 +290,4 @@ long long ** execute(long long ** tokens, std::size_t& tok_counts)
 	return execute_unary_minus(tokens, tok_counts);
 }
 
+#endif
