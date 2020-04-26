@@ -1,3 +1,5 @@
+#ifdef version1
+
 #include <iostream>
 #include <cstring>
 
@@ -11,7 +13,6 @@ inline long long InputError(char*& tmp, bool& ErrorFlag);
 
 bool scaling_operator(long long& lhs, char*& op, bool& ErrorFlag);
 bool pow_operator(long long& lhs, char*& op, bool& ErrorFlag);
-
 
 void main()
 {
@@ -48,53 +49,86 @@ long long parse(char** line, bool& ErrorFlag) {
 	return parse_private(&tmpline, ErrorFlag);
 }
 long long parse_private(char** line, bool& ErrorFlag) {
-	static const char *tokens = "-+*/%^";
+	
+	static const char *tokens = "-+*/%^()";
+	static int reqursion_calls = 0; // Для реалізації оператора "()"
+
 	char* tmp = new char[strlen(*line) + 1];
 	strcpy(tmp, *line);
 
 	long long lhs = 0;
-
 	char* next_operator = nullptr, this_operator = 0;
 
 	char *it = strtok(tmp, tokens);
-	if (!it) return InputError(tmp, ErrorFlag);
 
-	if (*tmp < '0' || *tmp > '9') this_operator = *tmp;
+	if ((*tmp < '0' || *tmp > '9' ) && *tmp != '(') 
+		this_operator = *tmp;
 
 	if (this_operator == '+' || this_operator == '-' || this_operator == 0) {
-		// Додавання та віднімання
-		if (it - tmp > 1) {
+		
+		if (it - tmp > 1 ){
 			next_operator = (*line + 1);
-			if (*next_operator == '-' && this_operator == '+') // lhs + -3 Можливо, все інше - ні.
+			if ((*next_operator == '-' && this_operator == '+'))		// lhs+-..., lhs+(..., lhs-(... можна
 			{
 				delete[] tmp;
-				return parse_private(&next_operator, ErrorFlag);
+				lhs = parse_private(&next_operator, ErrorFlag);
+				*line = next_operator;
+				return lhs;
+			}
+			else if (*next_operator == '(') {
+				delete[] tmp;
+				lhs = (this_operator == '-')?(-parse_private(&next_operator, ErrorFlag)):parse_private(&next_operator, ErrorFlag);
+				*line = next_operator;
+				return lhs;
 			}
 			else
 				return InputError(tmp, ErrorFlag);
 		}
-		next_operator = *line + (it - tmp) + strlen(it);
-		char* nan;
-		lhs = strtoll(tmp, &nan, 0);
-		if (nan == tmp) return NANError(tmp, line, ErrorFlag);
+		if (*tmp == '(') {
+			 // Відкрита дужка поверне число - значення виразу, між дужками
+			next_operator = *line + 1;
+			lhs += parse_private(&next_operator, ErrorFlag);
+			*line = next_operator;
+		}
+		else {
+			// Якщо не відкрита дужка, то число і його треба парсить
+			next_operator = *line + (it - tmp) + strlen(it);
+			char* nan;
+			lhs = strtoll(tmp, &nan, 0);
+			if (nan == tmp) return NANError(tmp, line, ErrorFlag);
+		}
+		
 		delete[] tmp;
-		// Спочатку виконати оператори, що знаходяться правіше.
+		// Спочатку виконати оператори, що знаходяться правіше, якщо їх пріоритет вище за пріоритет додавання та віднімання
 		while (scaling_operator(lhs, next_operator, ErrorFlag) || pow_operator(lhs, next_operator, ErrorFlag));
-		if (*next_operator == 0)
+		if (*next_operator == 0) {
 			// далі кінець виразу
+			*line = next_operator;
 			return lhs;
-		else
+		}
+		else if (*next_operator == ')')
+		{
+			// далі кінець підвиразу
+			*line = ++next_operator;
+			return lhs;
+		}
+		else {
 			// ще не кінець
-			return lhs + parse_private(&next_operator, ErrorFlag);
+			lhs += parse_private(&next_operator, ErrorFlag);
+			*line = next_operator;
+			return lhs;
+		}
 	}
 	else if (this_operator == '*' || this_operator == '/' || this_operator == '%' || this_operator == '^') {
 		// Множення, ділення, залишок від ділення, та піднесення до степеню
 		if (it - tmp > 1) {
 			next_operator = (*line + 1);
-			if (*next_operator == '-') // lhs*-3 Можливо, все інше - ні.
+			if (*next_operator == '-' || *next_operator == '(') // lhs*-..., lhs*(... можливо, все інше - ні.
 			{
 				delete[] tmp;
-				return parse_private(&next_operator, ErrorFlag);
+				lhs = parse_private(&next_operator, ErrorFlag);
+				*line = next_operator;
+				return lhs;
 			}
 			else
 				return InputError(tmp, ErrorFlag);
@@ -111,6 +145,12 @@ long long parse_private(char** line, bool& ErrorFlag) {
 		*line = next_operator;
 		return lhs;
 	}
+	/*else if (this_operator == '(') {
+		lhs += parse_private(&next_operator, ErrorFlag);
+		*line = next_operator;
+		return lhs;
+	}*/
+
 	return InputError(tmp, ErrorFlag);
 }
 
@@ -166,3 +206,4 @@ bool pow_operator(long long& lhs, char*& op, bool& ErrorFlag) {
 	}
 	return false && !ErrorFlag;
 }
+#endif
