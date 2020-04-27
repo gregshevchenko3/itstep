@@ -1,5 +1,7 @@
+//#ifdef version2
 #include <iostream>
 #include <cstring>
+#include <cmath> // for std::pow() in linux
 
 char* get_line();
 /**
@@ -19,21 +21,38 @@ char* get_line();
  * prev_operator_priority - При викликові з програми - не має сенсу, тому завжди 0. В рекурсії - пріоритет попереднього оператора.
  */
 long long parse(char** expr, long *error_code, long long* lhs = nullptr, bool unary = true, char prev_operator_priority = 0);
+/**
+ * Об'єднує в собі strtoll() та strtod(). Якщо не виходить повністю інтерпретувати str, як число - повертає false.
+ * якщо вдається інтерпретувати str, як ціле число, повертає true, is_integer встановлює в true, а число в ll_num,
+ * якщо вдається інтерпретувати str, як дійсне число, повертає true, is_integer встановлює в false, а число в d_num.
+ */
+bool strtonum(char* str, long& is_integer, long long& ll_num, double& d_num);
 //double parse(char** expr, double* lhs = nullptr, bool unary = true, char prev_operator_priority = 0);
 
 // Повідомлення про помилку.
 const char* const error_msg[] = {
-	"No Error",
-	"Invalid unary operator",
-	"Invalid binary operator"
+	"No Error",								// error_code = 0
+	"",										// error_code = 1
+	"Invalid unary operator",				// error_code = 2
+	"Invalid binary operator",				// error_code = 3
+	"Division by zero",						// error_code = 4
+	"Missing \"(\"",						// error_code = 5
+	"Missing \")\"",						// error_code = 6
+	"Not a number",							// error_code = 7
+	"Operation not supported",				// error_code = 8
 };
 
 
-// Масив операторів
-const char* const tokens =  "+-*/%^()!";
-const char* const prefix_tokens = "-(";
-const char* const postfix_tokens = "!)";
-// Масив пріорітитетів операторів.
+// Строки операторів
+const char* const tokens =  "+-*/%^()!"; // Всі оператори
+const char* const prefix_tokens = "-(";  // Тільки префіксні
+const char* const postfix_tokens = "!)"; // Тільки постфіксні
+/**
+ * Строки пріоритетів операторів. Кожен символ в строці позначає пріоритет відповідного оператора в строці tokens. 
+ * Якщо в оператора немає бінарної/унарної форми, то відповідний символ в строці priority (upriority - для унарних) == '0'
+ * Для операторів, яким пріоритет назначити важко символ пріоритету == '-'. Парсер не вміє обчислювати пріоритет операторів,
+ * тому бере пріоритет з цих двох строк.
+ */
 const char* const priority =  "112223000";
 const char* const upriority = "0400006-5";
 
@@ -41,7 +60,7 @@ const char* const upriority = "0400006-5";
 
 
 
-void main()
+int main() //for linux`s g++
 {
 	std::cout << "Simple console calc. For exit - press \"Ctrl+C\"" << std::endl;
 	while (1){
@@ -51,15 +70,16 @@ void main()
 
 		long err_code = 0;
 		long long result = parse(&tmp, &err_code, (long long*)nullptr);
-		if (err_code) {
+		if (err_code > 1) {
 			std::cout << "Error: " << error_msg[err_code] << std::endl;
 		}
-		else {
+		else if(err_code != 1){
 			std::cout << result << std::endl;
 		}
 		tmp = nullptr;
 		delete[] line;
 	}
+	return 0;
 }
 char* get_line()
 {
@@ -79,48 +99,51 @@ char* get_line()
 }
 long long parse(char** expr, long *error_code, long long* lhs, bool unary, char prev_operator_priority)
 {
+	if (**expr == 0) {
+		*error_code = 1;
+		return 0;
+	}
 	char* tmp = new char[strlen(*expr) + 1];
 	strcpy(tmp, *expr);
 	// Вказівник на стоку яка містить число.
 	char* it = strtok(tmp, tokens); 
-	// цей оператор - символьне позначення.
-	/*
-	 * Моживо тільки в моєму випадку, функція strtok() не замінює 0-й символ, що співпадає зодним із символів в шаблоні tokens;
-	 * пізніше  спробую перезібрати для linux, щоб переконатися в цьому.
-	 */
+	// Цей оператор - символьне позначення. Переданий вираз в expr буде починатися в більшості випадків з оператора,
+	// якщо буде починатися з числа, то це означає, що цей оператор == 0.
 	char this_operator = ((*tmp < '0' || *tmp > '9')) ? *tmp : 0;
-	// Вказівник на наступий оператор,
+	// Вказівник на наступий оператор, Може слідувати відразу за цим оператором. Вказівник на _next_operator
+	// передається в parse().
 	char* _next_operator = *expr + 1;
+	// Якщо наступний оператор буде визначений, як унарний - is_unary_next_operator == true;
 	bool is_unary_next_operator = false;
-	if (it) 
+	// Якщо операнд - не визначено (it == nullptr), то далі слідуєчерез декілька операторів або непоймичого - кінець виразу.
+	// Таким чином Наступний опператор визначається як *expr+1.
+	if (it)
 		_next_operator = (it - tmp > 1) ? _next_operator : *expr + (it - tmp + strlen(it));
 	/**
 	 * Аналіз наступного оператора.
 	 * 1) Якщо поточний оператор - не унарний постфіксний (не в списку postfix_tokens), i наступний оператор слідує відразу за поточним
 	 * операторотом - наступий оператор буде префіксним унарним.
 	 *
-	 * 2)Якщо наступний оператор - унарний і є в списку постфіксних (postfix_tokens), і за ним слідує якийсь оператор, або кінець строки,
+	 * 2)Якщо наступний оператор - є в списку постфіксних (postfix_tokens), і за ним слідує якийсь оператор, або кінець строки,
 	 * то наступний оператор буде унарнним постфіксним.
 	 */
+	if(*_next_operator) {
+		is_unary_next_operator = !strchr(postfix_tokens, this_operator) && (it - tmp > 1);
+		is_unary_next_operator = is_unary_next_operator || strchr(postfix_tokens, *_next_operator) && (strchr(tokens, *(_next_operator + 1)) || *(_next_operator + 1) == 0);
+	}
 
-	bool is_this_operator_have_postfix_form = strchr(postfix_tokens, this_operator),
-		is_next_operator_have_postfix_form = strchr(postfix_tokens, *_next_operator);
-
-	is_unary_next_operator = !is_this_operator_have_postfix_form && (it - tmp > 1);
-	is_unary_next_operator = is_unary_next_operator || is_next_operator_have_postfix_form && (strchr(tokens, *(_next_operator + 1)) || *(_next_operator + 1) == 0);
-
-
-	
-
-	// пріоритет цього та наступного операторів
-	char this_operator_priority = *((unary) ? (upriority + (strchr(tokens, this_operator) - tokens)) : (priority + (strchr(tokens, this_operator) - tokens))),
+	// пріоритет цього та наступного операторів.
+	char this_operator_priority = 0, next_operator_priority = 0;
+	if (*_next_operator) {
+		this_operator_priority = *((unary) ? (upriority + (strchr(tokens, this_operator) - tokens)) : (priority + (strchr(tokens, this_operator) - tokens)));
 		next_operator_priority = *((is_unary_next_operator) ? (upriority + (strchr(tokens, *_next_operator) - tokens)) : (priority + (strchr(tokens, *_next_operator) - tokens)));
+	}
 	long long expr_rhs = 0, _rhs = 0;
 	if(it)
 		_rhs = strtoll(it, nullptr, 0);
 	else 
 		if (!unary) {
-			*error_code = 2; // Unknown binary operator;
+			*error_code = 3; // Unknown binary operator;
 			return 0;
 		}
 	delete[] tmp;
@@ -141,6 +164,7 @@ long long parse(char** expr, long *error_code, long long* lhs, bool unary, char 
 	else
 		expr_rhs = _rhs;
 	// Виконання поточного оператора
+	static long open_breket_count = 0;
 	if (unary) {
 		switch (this_operator)
 		{
@@ -154,20 +178,25 @@ long long parse(char** expr, long *error_code, long long* lhs, bool unary, char 
 			// Факторіал лівої частини.
 			if (lhs) _rhs = factorial(*lhs);
 			break; */
-		case ')': 
+		case '(':
+			// Початок підвиразу		
+			open_breket_count++;
+			_rhs = parse(&_next_operator, error_code, &_rhs, is_unary_next_operator, this_operator_priority);
+			is_unary_next_operator = false;
+			*expr = _next_operator;
+			break;
+		case ')':
+			open_breket_count--;
 			// Кінець підвиразу.
 			if (lhs) _rhs = *lhs;
-			break;
-		case '(':
-			// Початок підвиразу
-			{
-				_rhs = parse(&_next_operator, error_code, &_rhs, is_unary_next_operator, this_operator_priority);
-				is_unary_next_operator = false;
-				*expr = _next_operator;
+			if (open_breket_count < 0) {
+				open_breket_count = 0;
+				*error_code = 5;
+				return 0;
 			}
 			break;
 		default:
-			*error_code = 1; // Unknown unary operator.
+			*error_code = 2; // Unknown binary operator.
 		}
 	} else
 		switch (this_operator)
@@ -186,6 +215,10 @@ long long parse(char** expr, long *error_code, long long* lhs, bool unary, char 
 			break;
 		case '/':
 			// Ділення.
+			if (!expr_rhs) {
+				*error_code = 4;
+				return 0;
+			}
 			_rhs = *lhs / expr_rhs;
 			break;
 		case '%':
@@ -197,7 +230,7 @@ long long parse(char** expr, long *error_code, long long* lhs, bool unary, char 
 			_rhs = std::pow(*lhs, expr_rhs);
 			break;
 		default:
-			*error_code = 2; // Unknown binary operator.
+			*error_code = 3; // Unknown binary operator.
 		}
 	/**
 	 * Якщо пріоритет попереднього оператора менший, за пріоритет поточного, то потрібно передати попередному операторові,
@@ -207,11 +240,23 @@ long long parse(char** expr, long *error_code, long long* lhs, bool unary, char 
 		*expr = _next_operator;
 		return _rhs;
 	}
+	if (open_breket_count > 0 && !*_next_operator) {
+		open_breket_count = 0;
+		*error_code = 6;
+		return 0;
+	}
 	/** Продовжуємо виконання операторів */
 	if (*_next_operator)
 		_rhs = parse(&_next_operator, error_code, &_rhs, is_unary_next_operator, this_operator_priority);
+
 	*expr = _next_operator;
 	return _rhs;
+}
+
+bool strtonum(char * str, long & is_integer, long long & ll_num, double & d_num)
+{
+
+	return false;
 }
 
 double parse(char** expr, double* lhs, bool unary, char prev_operator_priority)
@@ -244,6 +289,7 @@ double parse(char** expr, double* lhs, bool unary, char prev_operator_priority)
 	// пріоритет цього та наступного операторів
 	char this_operator_priority = *((unary) ? (upriority + (strchr(tokens, this_operator) - tokens)) : (priority + (strchr(tokens, this_operator) - tokens))),
 		next_operator_priority = *((is_unary_next_operator) ? (upriority + (strchr(tokens, *_next_operator) - tokens)) : (priority + (strchr(tokens, *_next_operator) - tokens)));
+
 	double expr_rhs = 0, _rhs = 0;
 	if (it)
 		_rhs = strtod(it, nullptr);
@@ -335,4 +381,4 @@ double parse(char** expr, double* lhs, bool unary, char prev_operator_priority)
 	*expr = _next_operator;
 	return _rhs;
 }
-
+//#endif
